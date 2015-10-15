@@ -34,7 +34,7 @@ In case you need synchronous operations, the entire API is duplicated:
  
 You may also switch between them by using:
 
-  var syncSettings = asyncSettings.GetSynchronousSettings();
+  var syncSettings = asyncSettings.SynchronousSettings();
  
  For more in depth information about this library, please check the wiki.
 
