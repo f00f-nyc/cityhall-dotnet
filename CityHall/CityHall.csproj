@@ -30,10 +30,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Ninject">
+      <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
+    </Reference>
     <Reference Include="RestSharp">
       <HintPath>..\packages\RestSharp.105.2.3\lib\net45\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -42,14 +46,37 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\CityHallConfigSection.cs" />
+    <Compile Include="Exceptions\MissingConfigSection.cs" />
+    <Compile Include="Config\Ninject.cs" />
+    <Compile Include="Data\Child.cs" />
+    <Compile Include="Data\Environment.cs" />
+    <Compile Include="Data\EnvironmentRights.cs" />
+    <Compile Include="Data\History.cs" />
+    <Compile Include="Data\Rights.cs" />
+    <Compile Include="Data\User.cs" />
+    <Compile Include="Data\UserRights.cs" />
+    <Compile Include="Exceptions\ErrorFromCityHallException.cs" />
+    <Compile Include="Exceptions\InvalidRequestException.cs" />
+    <Compile Include="Exceptions\NotLoggedInException.cs" />
+    <Compile Include="Exceptions\UrlMissingOrInvalidException.cs" />
+    <Compile Include="IAuthorization.cs" />
     <Compile Include="ISettings.cs" />
+    <Compile Include="IValues.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Responses\BaseResponse.cs" />
+    <Compile Include="Responses\GetUserResponse.cs" />
+    <Compile Include="Responses\ValueResponse.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Synchronous\ISettings.cs" />
-    <Compile Include="Synchronous\Settings.cs" />
+    <Compile Include="Synchronous\SyncSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Implementations\Async\" />
+    <Folder Include="Implementations\Sync\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

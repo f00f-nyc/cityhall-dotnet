@@ -22,15 +22,15 @@ This is the .Net/C# library for City Hall Enterprise Settings Server
  
  asyncSettings.Logout(); - To be called when the session is over.
  
- asyncSettings.get()- This should be the way to retrieve a value.
-     To get the value of '/some_app/value1', use:
-        await asyncSettings.get("/some_app/value1");
+ asyncSettings.Get()- This should be the most common way to retrieve a
+     value. To get the value of '/some_app/value1', use:
+        string value = await asyncSettings.Get("/some_app/value1");
 
 In case you need synchronous operations, the entire API is duplicated:
 
  using CityHall.Synchronous;
  var syncSettings = Settings(url, user, password);
- syncSettings.get("/some_app/value1");
+ string value = syncSettings.Get("/some_app/value1");
  
 You may also switch between them by using:
 

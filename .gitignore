@@ -3,3 +3,6 @@ bin
 obj
 packages/RestSharp*
 packages/NUnit*
+packages/Moq.4.2.1507.0118/
+packages/Ninject.3.2.2.0/
+packages/Nonin.1.0.0.2/

@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CityHall.Test
+namespace CityHall.Data
 {
-    public class AysncSettingsTest
+    public struct Environment
     {
+        public EnvironmentRights[] Rights { get; set; }
     }
 }
