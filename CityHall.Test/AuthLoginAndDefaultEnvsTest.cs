@@ -12,7 +12,7 @@ using System.Linq;
 namespace CityHall.Test
 {
     [TestFixture]
-    public class SyncSettingsTest
+    public class AuthLoginAndDefaultEnvsTest
     {
         private static void RemoveCityHallConfig()
         {
@@ -48,7 +48,7 @@ namespace CityHall.Test
         {
             TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value("dev"));
             Assert.IsNotNull(SyncSettings.Get());
-            TestSetup.ErrorResponseHandled(() => SyncSettings.Get());
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => SyncSettings.Get());
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace CityHall.Test
         [Test]
         public void AttemptingToGetSettingsWithoutConfigThrowsException()
         {
-            SyncSettingsTest.RemoveCityHallConfig();
+            AuthLoginAndDefaultEnvsTest.RemoveCityHallConfig();
             Assert.Throws<MissingConfigSection>(() => SyncSettings.Get());
         }
 
@@ -82,7 +82,7 @@ namespace CityHall.Test
         [Test]
         public void SettingsAssumeMachineNameAndNoPasswordIfNotPassedIn()
         {
-            SyncSettingsTest.RemoveCityHallConfig();
+            AuthLoginAndDefaultEnvsTest.RemoveCityHallConfig();
             Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.Value("dev"));
             Mock<IRestResponse<BaseResponse>> mockAuth = new Mock<IRestResponse<BaseResponse>>();
             string expectedJson = string.Format("{{\"username\":\"{0}\",\"passhash\":\"\"}}", Environment.MachineName);
@@ -188,7 +188,7 @@ namespace CityHall.Test
             
             TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value("dev"));
             settings = SyncSettings.Get();
-            TestSetup.ErrorResponseHandled(() => settings.Logout());
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Logout());
         }
 
         /// <summary>
@@ -199,25 +199,23 @@ namespace CityHall.Test
         [Test]
         public void SettingDefaultEnvironment()
         {
-            var client = TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value("dev"));
-            var mockOk = new Mock<IRestResponse<BaseResponse>>();
-            var settings = SyncSettings.Get();
             var resource = string.Format("auth/user/{0}/default/", TestSetup.Config.User);
             var expectedJson = "{\"env\":\"qa\"}";
 
-            mockOk.Setup(r => r.Data).Returns(TestSetup.Responses.Ok);
-            client.Setup(c => c.Execute<BaseResponse>(It.IsAny<IRestRequest>()))
-                .Callback<IRestRequest>(r =>
-                {
-                    Assert.AreEqual(Method.POST, r.Method);
-                    Assert.AreEqual(resource, r.Resource);
-                    Assert.AreEqual(expectedJson, r.Parameters[0].Value);
-                })
-                .Returns(mockOk.Object);
-
+            var settings = TestSetup.SetupCall(TestSetup.Responses.Ok, Method.POST, resource, expectedJson);
             settings.SetDefaultEnvironment("qa");
-            TestSetup.ErrorResponseHandled(() => settings.SetDefaultEnvironment("qa"));
-            TestSetup.LoggedOutHonored(settings, () => settings.SetDefaultEnvironment("qa"));
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.SetDefaultEnvironment("qa"));
+        }
+
+        /// <summary>
+        /// If no default environment has been set, the settings object should still work.
+        /// </summary>
+        [Test]
+        public void NoDefaultEnvironmentFailsGracefully()
+        {
+            TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value(null));
+            var settings = SyncSettings.Get();
+            Assert.IsNullOrEmpty(settings.DefaultEnvironment);
         }
 
         public void TestRestSharp()

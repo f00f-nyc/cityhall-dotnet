@@ -7,6 +7,7 @@ using RestSharp;
 using CityHall.Responses;
 using System;
 using CityHall.Exceptions;
+using System.Collections.Generic;
 
 namespace CityHall.Test
 {
@@ -40,6 +41,23 @@ namespace CityHall.Test
                     value = value
                 };
             }
+
+            public static EnvironmentResponse DevEnvironment
+            {
+                get
+                {
+                    return new EnvironmentResponse
+                    {
+                        Response = "Ok",
+                        Users = new Dictionary<string,int>
+                        {
+                            { "test_user", 4 },
+                            { "some_user", 1 },
+                            { "cityhall", 4 }
+                        }
+                    };
+                }
+            }
         }
 
         public static Mock<IRestClient> Response<T>(T value)
@@ -67,12 +85,42 @@ namespace CityHall.Test
             return mockClient;
         }
 
-        public static void ErrorResponseHandled(Action call)
+        public static Synchronous.ISettings SetupCall<T>(T value, Method method, string resource = null, string expectedJson = null)
+            where T : BaseResponse, new()
+        {
+            var mockClient = TestSetup.Response(Responses.Ok, Responses.Value("dev"));
+            var settings = Synchronous.SyncSettings.Get();
+
+            var mockResponse = new Mock<IRestResponse<T>>();
+            mockResponse.Setup(r => r.Data).Returns(value);
+
+            mockClient.Setup(c => c.Execute<T>(It.IsAny<IRestRequest>()))
+                .Callback<IRestRequest>(r => {
+                        Assert.AreEqual(method, r.Method);
+
+                        if (!string.IsNullOrEmpty(resource))
+                        {
+                            Assert.AreEqual(resource, r.Resource);
+                        }
+
+                        if (!string.IsNullOrEmpty(expectedJson))
+                        {
+                            Assert.AreEqual(expectedJson, r.Parameters[0].Value);
+                        }
+                    })
+                   .Returns(mockResponse.Object);
+            
+            return settings;
+        }
+
+        public static void ErrorResponseHandled<T>(Action call)
+            where T : BaseResponse, new()
         {
             var mockClient = CityHall.Config.Ninject.Kernel.Get<Mock<IRestClient>>();
-            var badResponse = new Mock<IRestResponse<BaseResponse>>();
-            badResponse.Setup(r => r.Data).Returns(TestSetup.Responses.NotOk);
-            mockClient.Setup(m => m.Execute<BaseResponse>(It.IsAny<IRestRequest>())).Returns(badResponse.Object);
+            var badResponse = new Mock<IRestResponse<T>>();
+            T response = new T() { Response = TestSetup.Responses.NotOk.Response, Message = "Call has failed" };
+            badResponse.Setup(r => r.Data).Returns(response);
+            mockClient.Setup(m => m.Execute<T>(It.IsAny<IRestRequest>())).Returns(badResponse.Object);
             Assert.Throws<ErrorFromCityHallException>(() => call());
         }
 

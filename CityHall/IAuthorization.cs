@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using CityHallEnvironment = CityHall.Data.Environment;
+using CityHallEnvironment = CityHall.Data.EnvironmentInfo;
 using CityHallUser = CityHall.Data.User;
 using CityHallRights = CityHall.Data.Rights;
 

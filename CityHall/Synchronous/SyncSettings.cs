@@ -1,4 +1,5 @@
-﻿using CityHall.Exceptions;
+﻿using CityHall.Data;
+using CityHall.Exceptions;
 using CityHall.Responses;
 using Ninject;
 using RestSharp;
@@ -57,6 +58,11 @@ namespace CityHall.Synchronous
             where T : BaseResponse, new()
         {
             var response = this.client.Execute<T>(request);
+
+            if (response == null)
+            {
+                throw new ErrorFromCityHallException(string.Format("Did not receive a response back from server for: method = {0}, resource = {1}", request.Method, request.Resource));
+            }
 
             if (!response.Data.IsValid)
             {
@@ -123,6 +129,19 @@ namespace CityHall.Synchronous
                     this.LoggedIn = false;
                 }
             }
+        }
+
+        public EnvironmentInfo GetEnvironment(string envName)
+        {
+            this.EnsureLoggedIn();
+            EnvironmentResponse response = this.Get<EnvironmentResponse>("auth/env/{0}/", envName);
+            return new EnvironmentInfo { Rights = response.Users.Select(kv => new EnvironmentRights { User = kv.Key, Rights = (Rights)kv.Value }).ToArray() };
+        }
+
+        public void CreateEnvironment(string envName)
+        {
+            this.EnsureLoggedIn();
+            this.Post<BaseResponse>(new {}, "auth/env/{0}/", envName);
         }
         #endregion
 

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CityHall.Data;
 using AsyncISettings = CityHall.ISettings;
 
 namespace CityHall.Synchronous
@@ -14,5 +10,8 @@ namespace CityHall.Synchronous
         string DefaultEnvironment { get; }
         void SetDefaultEnvironment(string defaultEnvironment);
         void Logout();
+
+        EnvironmentInfo GetEnvironment(string envName);
+        void CreateEnvironment(string envName);
     }
 }
