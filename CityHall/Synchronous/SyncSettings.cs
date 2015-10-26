@@ -28,22 +28,51 @@ namespace CityHall.Synchronous
             var login = this.Post<BaseResponse>(new { username = user, passhash = "" }, "auth/");
             if (login.IsValid)
             {
-                this.DefaultEnvironment = this.Get<ValueResponse>("auth/user/{0}/default/", user).value;
+                try
+                {
+                    this.DefaultEnvironment = this.Get<ValueResponse>("auth/user/{0}/default/", user).value;
+                }
+                catch
+                {
+                    this.DefaultEnvironment = null;
+                }
+                finally
+                {
+                    lock (this.client)
+                    {
+                        this.User = user;
+                        this.LoggedIn = true;
+                    }
+                }
             }
         }
 
         private IRestClient client;
+        public bool LoggedIn { get; protected set; }
         public string DefaultEnvironment { get; protected set; }
+        public string User { get; protected set; }
 
         # region REST requests
+        private T Execute<T>(IRestRequest request)
+            where T : BaseResponse, new()
+        {
+            var response = this.client.Execute<T>(request);
+
+            if (!response.Data.IsValid)
+            {
+                throw new ErrorFromCityHallException(response.Data.Message);
+            }
+
+            return response.Data;
+        }
+
         private T Post<T>(object data, string location, params object[] args)
             where T : BaseResponse, new()
         {
             string fullLocation = string.Format(location, args);
             IRestRequest request = new RestRequest(fullLocation, Method.POST) { RequestFormat = DataFormat.Json };
             request.AddBody(data);
-            var response = this.client.Execute<T>(request);
-            return response.Data;
+            return this.Execute<T>(request);
         }
 
         private T Get<T>(string location, params object[] args)
@@ -51,18 +80,50 @@ namespace CityHall.Synchronous
         {
             string fullLocation = string.Format(location, args);
             IRestRequest request = new RestRequest(fullLocation, Method.GET) { RequestFormat = DataFormat.Json };
-            var response = this.client.Execute<T>(request);
-            return response.Data;
+            return this.Execute<T>(request);
+        }
+
+        private BaseResponse Delete(string location, params object[] args)
+        {
+            string fullLocation = string.Format(location, args);
+            IRestRequest request = new RestRequest(fullLocation, Method.DELETE) { RequestFormat = DataFormat.Json };
+            return this.Execute<BaseResponse>(request);
         }
         #endregion
 
         #region CityHall.Synchronous.ISettings
+        private void EnsureLoggedIn()
+        {
+            if (!this.LoggedIn)
+            {
+                throw new NotLoggedInException();
+            }
+        }
 
         public CityHall.ISettings AsynchronousSettings()
         {
+            this.EnsureLoggedIn();
+
             throw new NotImplementedException();
         }
 
+        public void SetDefaultEnvironment(string defaultEnvironment)
+        {
+            this.EnsureLoggedIn();
+            this.Post<BaseResponse>(new { env=defaultEnvironment }, "auth/user/{0}/default/", this.User);
+        }
+
+        public void Logout()
+        {
+            lock (this.client)
+            {
+                if (this.LoggedIn)
+                {
+                    BaseResponse delete = this.Delete("auth/");
+                    this.LoggedIn = false;
+                }
+            }
+        }
         #endregion
 
         /**

@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CityHall.Exceptions
 {
-    class NotLoggedInException
+    public class NotLoggedInException : Exception
     {
+        public NotLoggedInException()
+            : base(@"Have been logged out of City Hall.  Must instantiate a new Settings in order to log back in.")
+        { }
     }
 }

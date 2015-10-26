@@ -10,5 +10,9 @@ namespace CityHall.Synchronous
     public interface ISettings
     {
         AsyncISettings AsynchronousSettings();
+        
+        string DefaultEnvironment { get; }
+        void SetDefaultEnvironment(string defaultEnvironment);
+        void Logout();
     }
 }
