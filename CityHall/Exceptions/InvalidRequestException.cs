@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CityHall.Exceptions
 {
-    class InvalidRequestException
+    public class InvalidRequestException : Exception
     {
+        public InvalidRequestException(string format, params object[] args)
+            : base(string.Format(format, args))
+        { }
     }
 }

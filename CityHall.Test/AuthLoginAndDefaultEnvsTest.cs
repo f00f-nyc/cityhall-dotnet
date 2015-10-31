@@ -46,7 +46,7 @@ namespace CityHall.Test
         [Test]
         public void SettingsAreReturned()
         {
-            TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value("dev"));
+            TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
             Assert.IsNotNull(SyncSettings.Get());
             TestSetup.ErrorResponseHandled<BaseResponse>(() => SyncSettings.Get());
         }
@@ -83,7 +83,7 @@ namespace CityHall.Test
         public void SettingsAssumeMachineNameAndNoPasswordIfNotPassedIn()
         {
             AuthLoginAndDefaultEnvsTest.RemoveCityHallConfig();
-            Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.Value("dev"));
+            Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.DefaultEnvironment);
             Mock<IRestResponse<BaseResponse>> mockAuth = new Mock<IRestResponse<BaseResponse>>();
             string expectedJson = string.Format("{{\"username\":\"{0}\",\"passhash\":\"\"}}", Environment.MachineName);
 
@@ -101,7 +101,7 @@ namespace CityHall.Test
         [Test]
         public void ConfigSectionIsHonoredUrl()
         {
-            Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value("dev"));
+            Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
             client.SetupSet(c => c.BaseUrl = It.IsAny<Uri>()).Callback<Uri>(u => Assert.AreEqual(TestSetup.Config.Url, u.AbsoluteUri));
             SyncSettings.Get();
         }
@@ -112,7 +112,7 @@ namespace CityHall.Test
         [Test]
         public void UrlPassedInOverridesConfig()
         {
-            Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value("dev"));
+            Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
             string different_url = "http://test.new.url/api";
             client.SetupSet(c => c.BaseUrl = It.IsAny<Uri>()).Callback<Uri>(u => Assert.AreEqual(different_url, u.AbsoluteUri));
             SyncSettings.Get(url: different_url);
@@ -124,7 +124,7 @@ namespace CityHall.Test
         [Test]
         public void EmptyPasswordIsHonored()
         {
-            Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.Value("dev"));
+            Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.DefaultEnvironment);
             Mock<IRestResponse<BaseResponse>> mockAuth = new Mock<IRestResponse<BaseResponse>>();
             string expectedJson = "{\"username\":\"test\",\"passhash\":\"\"}";
 
@@ -142,7 +142,7 @@ namespace CityHall.Test
         [Test]
         public void PasswordIsHashed()
         {
-            Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.Value("dev"));
+            Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.DefaultEnvironment);
             Mock<IRestResponse<BaseResponse>> mockAuth = new Mock<IRestResponse<BaseResponse>>();
             string expectedJson = string.Format("{{\"username\":\"test\",\"passhash\":\"\"}}", SyncSettings.Hash("test"));
 
@@ -160,9 +160,9 @@ namespace CityHall.Test
         [Test]
         public void DefaultEnvironmentIsRetrieved()
         {
-            TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value("dev"));
+            TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
             var settings = SyncSettings.Get();
-            Assert.AreEqual("dev", settings.DefaultEnvironment);
+            Assert.AreEqual(TestSetup.Responses.DefaultEnvironment.value, settings.DefaultEnvironment);
         }
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace CityHall.Test
         [Test]
         public void LoggingOutWorks()
         {
-            var client = TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value("dev"));
+            var client = TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
             var mockOk = new Mock<IRestResponse<BaseResponse>>();
             var settings = SyncSettings.Get();
 
@@ -186,7 +186,7 @@ namespace CityHall.Test
             
             settings.Logout();
             
-            TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value("dev"));
+            TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
             settings = SyncSettings.Get();
             TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Logout());
         }

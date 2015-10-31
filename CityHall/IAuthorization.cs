@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using CityHallEnvironment = CityHall.Data.EnvironmentInfo;
-using CityHallUser = CityHall.Data.User;
+using CityHallUser = CityHall.Data.UserInfo;
 using CityHallRights = CityHall.Data.Rights;
 
 namespace CityHall

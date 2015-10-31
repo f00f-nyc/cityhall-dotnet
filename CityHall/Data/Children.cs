@@ -9,4 +9,10 @@
         public string Value { get; set; }
         public bool Protect { get; set; }
     }
+
+    public struct Children
+    {
+        public string Path { get; set; }
+        public Child[] SubChildren { get; set; }
+    }
 }

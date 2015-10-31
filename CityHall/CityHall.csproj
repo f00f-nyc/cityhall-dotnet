@@ -47,14 +47,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Config\CityHallConfigSection.cs" />
+    <Compile Include="Data\Children.cs" />
     <Compile Include="Data\EnvironmentInfo.cs" />
+    <Compile Include="Data\UserInfo.cs" />
+    <Compile Include="Data\Value.cs" />
     <Compile Include="Exceptions\MissingConfigSection.cs" />
     <Compile Include="Config\Ninject.cs" />
-    <Compile Include="Data\Child.cs" />
     <Compile Include="Data\EnvironmentRights.cs" />
     <Compile Include="Data\History.cs" />
     <Compile Include="Data\Rights.cs" />
-    <Compile Include="Data\User.cs" />
     <Compile Include="Data\UserRights.cs" />
     <Compile Include="Exceptions\ErrorFromCityHallException.cs" />
     <Compile Include="Exceptions\InvalidRequestException.cs" />
@@ -65,8 +66,10 @@
     <Compile Include="IValues.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Responses\BaseResponse.cs" />
+    <Compile Include="Responses\ChildrenResponse.cs" />
     <Compile Include="Responses\EnvironmentResponse.cs" />
-    <Compile Include="Responses\GetUserResponse.cs" />
+    <Compile Include="Responses\HistoryResponse.cs" />
+    <Compile Include="Responses\UserInfoResponse.cs" />
     <Compile Include="Responses\ValueResponse.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Synchronous\ISettings.cs" />

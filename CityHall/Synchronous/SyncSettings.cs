@@ -4,6 +4,7 @@ using CityHall.Responses;
 using Ninject;
 using RestSharp;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 using System.Net;
@@ -13,6 +14,17 @@ using CityHallNinject = CityHall.Config.Ninject;
 
 namespace CityHall.Synchronous
 {
+    internal static class IRestRequestExt
+    {
+        public static void AddParameters(this IRestRequest request, Dictionary<string, string> args)
+        {
+            foreach (KeyValuePair<string, string> arg in args ?? new Dictionary<string, string>())
+            {
+                request.AddParameter(arg.Key, arg.Value);
+            }
+        }
+    }
+
     public class SyncSettings : ISettings
     {
         static SyncSettings()
@@ -75,24 +87,41 @@ namespace CityHall.Synchronous
         private T Post<T>(object data, string location, params object[] args)
             where T : BaseResponse, new()
         {
-            string fullLocation = string.Format(location, args);
-            IRestRequest request = new RestRequest(fullLocation, Method.POST) { RequestFormat = DataFormat.Json };
+            return this.PostWithParameters<T>(data, string.Format(location, args));
+        }
+
+        private T PostWithParameters<T>(object data, string location, Dictionary<string, string> args = null)
+            where T : BaseResponse, new()
+        {
+            IRestRequest request = new RestRequest(location, Method.POST) { RequestFormat = DataFormat.Json };
             request.AddBody(data);
+            request.AddParameters(args);
             return this.Execute<T>(request);
         }
 
         private T Get<T>(string location, params object[] args)
             where T : BaseResponse, new()
         {
-            string fullLocation = string.Format(location, args);
-            IRestRequest request = new RestRequest(fullLocation, Method.GET) { RequestFormat = DataFormat.Json };
+            return this.GetWithParameters<T>(string.Format(location, args));
+        }
+
+        private T GetWithParameters<T>(string location, Dictionary<string, string> args = null)
+            where T : BaseResponse, new()
+        {
+            IRestRequest request = new RestRequest(location, Method.GET) { RequestFormat = DataFormat.Json };
+            request.AddParameters(args);
             return this.Execute<T>(request);
         }
 
-        private BaseResponse Delete(string location, params object[] args)
+        private BaseResponse DeleteFormat(string location, params object[] args)
         {
-            string fullLocation = string.Format(location, args);
-            IRestRequest request = new RestRequest(fullLocation, Method.DELETE) { RequestFormat = DataFormat.Json };
+            return this.DeleteWithParameters(string.Format(location, args));
+        }
+
+        private BaseResponse DeleteWithParameters(string location, Dictionary<string, string> args = null)
+        {
+            IRestRequest request = new RestRequest(location, Method.DELETE) { RequestFormat = DataFormat.Json };
+            request.AddParameters(args);
             return this.Execute<BaseResponse>(request);
         }
         #endregion
@@ -125,7 +154,7 @@ namespace CityHall.Synchronous
             {
                 if (this.LoggedIn)
                 {
-                    BaseResponse delete = this.Delete("auth/");
+                    BaseResponse delete = this.DeleteFormat("auth/");
                     this.LoggedIn = false;
                 }
             }
@@ -143,6 +172,150 @@ namespace CityHall.Synchronous
             this.EnsureLoggedIn();
             this.Post<BaseResponse>(new {}, "auth/env/{0}/", envName);
         }
+
+        public UserInfo GetUserInfo(string userName)
+        {
+            this.EnsureLoggedIn();
+            UserInfoResponse response = this.Get<UserInfoResponse>("auth/user/{0}", userName);
+            return new UserInfo { Permissions = response.Environments.Select(kv => new UserRights { Environment = kv.Key, Rights = (Rights)kv.Value }).ToArray() };
+        }
+
+        public void CreateUser(string userName, string password)
+        {
+            if (string.Equals(userName, this.User))
+            {
+                throw new InvalidRequestException("You are passing your own user name to CreateUser(). Please use UpdatePassword() to update your own password");
+            }
+
+            this.SetPassword(userName, password);
+        }
+
+        public void UpdatePassword(string password)
+        {
+            this.SetPassword(this.User, password);
+        }
+
+        /// <summary>
+        /// Even though CreateUser and UpdatePassword do the same thing, it makes a little more
+        /// sense conceptually to break them out into their own, well-named methods, instead of
+        /// requiring the user to know about the specifics of how the City Hall API works.
+        /// </summary>
+        /// <param name="userName">The user for whom to set the password, can be this.User</param>
+        /// <param name="password">The plaintext password to set, it will be hashed before being passed across the wire</param>
+        private void SetPassword(string userName, string password)
+        {
+            this.EnsureLoggedIn();
+            var hash = string.IsNullOrEmpty(password) ? "" : SyncSettings.Hash(password);
+            this.Post<BaseResponse>(new { passhash = hash }, "auth/user/{0}/", userName);
+        }
+
+        public void DeleteUser(string userName)
+        {
+            this.EnsureLoggedIn();
+            this.DeleteFormat("auth/user/{0}/", userName);
+        }
+
+        public void Grant(string userName, string environment, Rights rights)
+        {
+            this.EnsureLoggedIn();
+            this.Post<BaseResponse>(new { env = environment, user = userName, rights = (int)rights }, "auth/grant/");
+        }
+
+        public T GetRaw<T>(string environment, string path, Dictionary<string, string> args = null)
+            where T : BaseResponse, new()
+        {
+            this.EnsureLoggedIn();
+            path = string.Format("env/{0}{1}", environment, SyncSettings.SanitizePath(path));
+            return this.GetWithParameters<T>(path, args);
+        }
+
+        private string GetEnv(string environment = null)
+        {
+            if (string.IsNullOrEmpty(environment) && string.IsNullOrEmpty(this.DefaultEnvironment))
+            {
+                throw new InvalidRequestException("attempted to retreive a value without specifying an enviornment and user '{0}' has no default environment", this.User);
+            }
+            return string.IsNullOrEmpty(environment) ? this.DefaultEnvironment : environment;
+        }
+
+        private static Dictionary<string, string> GetOverride(string over = null)
+        {
+            return string.IsNullOrEmpty(over)
+                ? new Dictionary<string, string>()
+                : new Dictionary<string, string> { { "override", over } };
+        }
+
+        public string GetValue(string path, string environment = null, string over = null)
+        {
+            return this.GetRaw<ValueResponse>(this.GetEnv(environment), path, args: SyncSettings.GetOverride(over)).value;
+        }
+
+        public Children GetChildren(string path, string environment = null)
+        {
+            ChildrenResponse response = this.GetRaw<ChildrenResponse>(this.GetEnv(environment), path, new Dictionary<string,string> { { "viewchildren", "true" } });
+            return new Children
+            {
+                Path = response.path,
+                SubChildren = response.children
+                  .Select(c => new Child 
+                        { 
+                            Id = c.id,
+                            Name = c.name,
+                            Override = c.@override, 
+                            Path = c.path, 
+                            Protect = c.protect,
+                            Value = c.value 
+                        })
+                  .ToArray()
+            };
+        }
+
+        public History GetHistory(string path, string environment = null, string over = null)
+        {
+            Dictionary<string, string> paramDict = SyncSettings.GetOverride(over);
+            paramDict["viewhistory"] = "true";
+            HistoryResponse response = this.GetRaw<HistoryResponse>(this.GetEnv(environment), path, paramDict);
+            return new History
+            {
+                Entries = response.History
+                    .Select(h => new Entry
+                         {
+                             Active = h.active,
+                             Author = h.author,
+                             DateTime = h.datetime,
+                             Id = h.id,
+                             Name = h.name,
+                             Override = h.@override,
+                             Protect = h.protect,
+                             Value = h.value
+                         })
+                    .ToArray()
+            };
+        }
+        
+        public void SetRaw(string environment, string path, Value value, string over = null)
+        {
+            this.EnsureLoggedIn();
+            string location = string.Format("env/{0}{1}", this.GetEnv(environment), SyncSettings.SanitizePath(path));
+            this.PostWithParameters<BaseResponse>(value.ToPayload(), location, SyncSettings.GetOverride(over));
+        }
+
+        public void Set(string environment, string path, string value, string over = null)
+        {
+            this.SetRaw(environment, path, new Value(value), over);
+        }
+
+        public void SetProtect(string environment, string path, bool protect, string over = null)
+        {
+            this.SetRaw(environment, path, new Value(protect), over);
+        }
+
+        public void Delete(string environment, string path, string over = null)
+        {
+            this.EnsureLoggedIn();
+            string location = string.Format("env/{0}{1}", this.GetEnv(environment), SyncSettings.SanitizePath(path));
+            this.DeleteWithParameters(location, SyncSettings.GetOverride(over));
+        }        
         #endregion
 
         /**
@@ -188,6 +361,33 @@ namespace CityHall.Synchronous
             MD5 md5 = MD5.Create();
             byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(password);
             return string.Join("", md5.ComputeHash(inputBytes).Select(b => b.ToString("X2")));
+        }
+
+        private static string SanitizePath(string path)
+        {
+            StringBuilder sb = new StringBuilder();
+            bool sbUsed = false;
+
+            if (string.IsNullOrEmpty(path))
+            {
+                return "/";
+            }
+            
+            if (path[0] != '/')
+            {
+                sbUsed = true;
+                sb.Append('/');
+            }
+            
+            sb.Append(path);
+
+            if (!path.EndsWith("/"))
+            {
+                sbUsed = true;
+                sb.Append('/');
+            }
+
+            return sbUsed ? sb.ToString() : path;
         }
     }
 }

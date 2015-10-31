@@ -1,13 +1,7 @@
 ﻿using CityHall.Responses;
-using CityHall.Synchronous;
-using Moq;
 using NUnit.Framework;
 using RestSharp;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CityHall.Test
 {
@@ -27,7 +21,7 @@ namespace CityHall.Test
             TestSetup.ErrorResponseHandled<EnvironmentResponse>(() => settings.GetEnvironment("dev"));
             TestSetup.LoggedOutHonored(settings, () => settings.GetEnvironment("dev"));
 
-            Assert.AreEqual(env.Rights.Count(), TestSetup.Responses.DevEnvironment.Users.Count(), "The data received from the call should be visible in the call");
+            Assert.AreEqual(env.Rights.Count(), TestSetup.Responses.DevEnvironment.Users.Count(), "The data received from the call should be visible in the return value");
         }
 
         /// <summary>

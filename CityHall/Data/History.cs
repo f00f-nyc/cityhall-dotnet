@@ -2,7 +2,7 @@
 
 namespace CityHall.Data
 {
-    public struct History
+    public struct Entry
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -12,5 +12,10 @@ namespace CityHall.Data
         public bool Active { get; set; }
         public bool Protect { get; set; }
         public string Override { get; set; }
+    }
+
+    public struct History
+    {
+        public Entry[] Entries { get; set; }
     }
 }

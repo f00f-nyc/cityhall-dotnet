@@ -56,7 +56,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuthEnvironmentsTest.cs" />
+    <Compile Include="AuthGrantTest.cs" />
     <Compile Include="AuthLoginAndDefaultEnvsTest.cs" />
+    <Compile Include="AuthUsersTest.cs" />
+    <Compile Include="EnvTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestSetup.cs" />
   </ItemGroup>

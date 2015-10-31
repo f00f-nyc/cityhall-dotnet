@@ -1,6 +1,6 @@
 ﻿namespace CityHall.Data
 {
-    public struct User
+    public struct UserInfo
     {
         public UserRights[] Permissions { get; set; }
     }

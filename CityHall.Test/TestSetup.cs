@@ -8,6 +8,7 @@ using CityHall.Responses;
 using System;
 using CityHall.Exceptions;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CityHall.Test
 {
@@ -42,6 +43,10 @@ namespace CityHall.Test
                 };
             }
 
+            public static ValueResponse Val1 { get { return Responses.Value("val1"); } }
+
+            public static ValueResponse DefaultEnvironment { get { return Responses.Value("dev"); } }
+            
             public static EnvironmentResponse DevEnvironment
             {
                 get
@@ -54,6 +59,92 @@ namespace CityHall.Test
                             { "test_user", 4 },
                             { "some_user", 1 },
                             { "cityhall", 4 }
+                        }
+                    };
+                }
+            }
+
+            public static UserInfoResponse UserInfo
+            {
+                get
+                {
+                    return new UserInfoResponse
+                    {
+                        Response = "Ok",
+                        Environments = new Dictionary<string, int>
+                        {
+                            {"dev", 4}, 
+                            {"auto", 1}, 
+                            {"users", 1}
+                        }
+                    };
+                }
+            }
+
+            public static ChildrenResponse ChildrenResponse
+            {
+                get
+                {
+                    return new ChildrenResponse
+                    {
+                        Response = "Ok",
+                        children = new List<ChildResponse>()
+                        {
+                            new ChildResponse
+                            {
+                                id = 302,
+                                name = "value1",
+                                @override = "",
+                                path = "/app1/domainA/feature_1/value1/",
+                                protect = false,
+                                value = "1000"
+                            },
+                            new ChildResponse
+                            {
+                                id = 552,
+                                name = "value1",
+                                @override = TestSetup.Config.User,
+                                path = "/app1/domainA/feature_1/value1/",
+                                protect = false,
+                                value = "2"
+                            }
+                        },
+                        path = "/app1/domainA/feature_1/"
+                    };
+                }
+            }
+
+            public static HistoryResponse HistoryResponse
+            {
+                get
+                {
+                    return new HistoryResponse
+                    {
+                        Response = "Ok",
+                        History = new List<LogEntry>
+                        {
+                            new LogEntry
+                            {
+                                active = false,
+                                @override = "",
+                                id = 12,
+                                value = "999",
+                                datetime = DateTime.Now.AddMinutes(-1.0),
+                                protect = false,
+                                name = "value1",
+                                author = TestSetup.Config.User
+                            },
+                            new LogEntry
+                            {
+                                active = true,
+                                @override = "",
+                                id = 12,
+                                value = "1000",
+                                datetime = DateTime.Now,
+                                protect = false,
+                                name = "value1",
+                                author = TestSetup.Config.User
+                            }
                         }
                     };
                 }
@@ -85,10 +176,16 @@ namespace CityHall.Test
             return mockClient;
         }
 
-        public static Synchronous.ISettings SetupCall<T>(T value, Method method, string resource = null, string expectedJson = null)
+        public static Synchronous.ISettings SetupCall<T>(
+            T value, 
+            Method method, 
+            string resource = null, 
+            string expectedJson = null,
+            Dictionary<string, string> args = null
+        )
             where T : BaseResponse, new()
         {
-            var mockClient = TestSetup.Response(Responses.Ok, Responses.Value("dev"));
+            var mockClient = TestSetup.Response(Responses.Ok, Responses.DefaultEnvironment);
             var settings = Synchronous.SyncSettings.Get();
 
             var mockResponse = new Mock<IRestResponse<T>>();
@@ -106,6 +203,13 @@ namespace CityHall.Test
                         if (!string.IsNullOrEmpty(expectedJson))
                         {
                             Assert.AreEqual(expectedJson, r.Parameters[0].Value);
+                        }
+
+                        foreach (KeyValuePair<string, string> kv in args ?? new Dictionary<string, string>())
+                        {
+                            Parameter param = r.Parameters.FirstOrDefault(p => p.Name.Equals(kv.Key));
+                            Assert.NotNull(param, string.Format("Expected to find a param {0}:{1} in the list of params for [{2}@{3}]", kv.Key, kv.Value, r.Method, r.Resource));
+                            Assert.AreEqual(param.Value, kv.Value);
                         }
                     })
                    .Returns(mockResponse.Object);
