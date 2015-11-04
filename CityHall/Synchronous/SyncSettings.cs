@@ -20,7 +20,7 @@ namespace CityHall.Synchronous
         {
             foreach (KeyValuePair<string, string> arg in args ?? new Dictionary<string, string>())
             {
-                request.AddParameter(arg.Key, arg.Value);
+                request.AddParameter(arg.Key, arg.Value, ParameterType.QueryString);
             }
         }
     }
@@ -38,7 +38,7 @@ namespace CityHall.Synchronous
             this.client.BaseUrl = new Uri(url);
             this.client.CookieContainer = new CookieContainer();
 
-            var login = this.Post<BaseResponse>(new { username = user, passhash = "" }, "auth/");
+            var login = this.Post<BaseResponse>(new { username = user, passhash = SyncSettings.Hash(password) }, "auth/");
             if (login.IsValid)
             {
                 try
@@ -74,6 +74,11 @@ namespace CityHall.Synchronous
             if (response == null)
             {
                 throw new ErrorFromCityHallException(string.Format("Did not receive a response back from server for: method = {0}, resource = {1}", request.Method, request.Resource));
+            }
+
+            if (response.Data == null)
+            {
+                throw new ErrorFromCityHallException(string.Format("Did not receive data back from City Hall. Status Code: {0}", response.StatusCode));
             }
 
             if (!response.Data.IsValid)
@@ -238,9 +243,17 @@ namespace CityHall.Synchronous
             return string.IsNullOrEmpty(environment) ? this.DefaultEnvironment : environment;
         }
 
+        /// <summary>
+        /// City Hall api places values at env/{environment name}/{path}/
+        /// If you want to retrieve a specific override, you can specify as a query parameter.  (i.e. ?override={override})
+        /// And, if you want to retrieve the default value, specifically, the same entry point is used, but no value
+        /// is passed in. (i.e. ?override=)
+        /// </summary>
+        /// <param name="over">The optional value passed into the public function</param>
+        /// <returns>A dictionary containing the override param, or an empty dictionary to be passed to the Get or Post wrappers</returns>
         private static Dictionary<string, string> GetOverride(string over = null)
         {
-            return string.IsNullOrEmpty(over)
+            return over == null
                 ? new Dictionary<string, string>()
                 : new Dictionary<string, string> { { "override", over } };
         }
@@ -358,9 +371,14 @@ namespace CityHall.Synchronous
 
         public static string Hash(string password)
         {
+            if (string.IsNullOrEmpty(password))
+            {
+                return "";
+            }
+
             MD5 md5 = MD5.Create();
             byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(password);
-            return string.Join("", md5.ComputeHash(inputBytes).Select(b => b.ToString("X2")));
+            return string.Join("", md5.ComputeHash(inputBytes).Select(b => b.ToString("X2").ToLower()));
         }
 
         private static string SanitizePath(string path)

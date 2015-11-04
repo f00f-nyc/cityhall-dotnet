@@ -144,7 +144,7 @@ namespace CityHall.Test
         {
             Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.DefaultEnvironment);
             Mock<IRestResponse<BaseResponse>> mockAuth = new Mock<IRestResponse<BaseResponse>>();
-            string expectedJson = string.Format("{{\"username\":\"test\",\"passhash\":\"\"}}", SyncSettings.Hash("test"));
+            string expectedJson = string.Format("{{\"username\":\"test\",\"passhash\":\"{0}\"}}", SyncSettings.Hash("test"));
 
             mockAuth.Setup(r => r.Data).Returns(TestSetup.Responses.Ok);
             client.Setup(c => c.Execute<BaseResponse>(It.IsAny<IRestRequest>()))
@@ -216,21 +216,6 @@ namespace CityHall.Test
             TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value(null));
             var settings = SyncSettings.Get();
             Assert.IsNullOrEmpty(settings.DefaultEnvironment);
-        }
-
-        public void TestRestSharp()
-        {
-            var client = new RestClient();
-            client.BaseUrl = new Uri("http://digitalborderlands.herokuapp.com/api/");
-
-            RestRequest login = new RestRequest("auth/", Method.POST) { RequestFormat = DataFormat.Json };
-            login.AddBody(new { username = "guest", passhash = "" });
-            IRestResponse<BaseResponse> response = client.Execute<BaseResponse>(login);
-        }
-
-        public void TestRealCityHall()
-        {
-            var settings = SyncSettings.Get("http://digitalborderlands.herokuapp.com/api/", "test", "");
         }
     }
 }
