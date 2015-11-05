@@ -17,9 +17,9 @@ namespace CityHall.Test
             var resource = "auth/user/test_user/";
 
             var settings = TestSetup.SetupCall(TestSetup.Responses.UserInfo, Method.GET, resource);
-            var env = settings.GetUserInfo("test_user");
-            TestSetup.ErrorResponseHandled<EnvironmentResponse>(() => settings.GetUserInfo("test_user"));
-            TestSetup.LoggedOutHonored(settings, () => settings.GetUserInfo("test_user"));
+            var env = settings.Users.Get("test_user");
+            TestSetup.ErrorResponseHandled<EnvironmentResponse>(() => settings.Users.Get("test_user"));
+            TestSetup.LoggedOutHonored(settings, () => settings.Users.Get("test_user"));
 
             Assert.AreEqual(env.Permissions.Count(), TestSetup.Responses.UserInfo.Environments.Count(), "The data received from the call should be visible in the return value");
         }
@@ -34,15 +34,15 @@ namespace CityHall.Test
             var resource = "auth/user/a_new_user/";
             var expectedJson = "{\"passhash\":\"\"}";
             var settings = TestSetup.SetupCall(TestSetup.Responses.Ok, Method.POST, resource, expectedJson);
-            settings.CreateUser("a_new_user", "");
-            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.CreateUser("a_new_user", ""));
-            TestSetup.LoggedOutHonored(settings, () => settings.CreateUser("a_new_user", ""));
+            settings.Users.CreateUser("a_new_user", "");
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Users.CreateUser("a_new_user", ""));
+            TestSetup.LoggedOutHonored(settings, () => settings.Users.CreateUser("a_new_user", ""));
 
             expectedJson = string.Format("{{\"passhash\":\"{0}\"}}", Synchronous.Password.Hash("password"));
             settings = TestSetup.SetupCall(TestSetup.Responses.Ok, Method.POST, resource, expectedJson);
-            settings.CreateUser("a_new_user", "password");
+            settings.Users.CreateUser("a_new_user", "password");
 
-            Assert.Throws<InvalidRequestException>(() => settings.CreateUser(TestSetup.Config.User, ""));
+            Assert.Throws<InvalidRequestException>(() => settings.Users.CreateUser(TestSetup.Config.User, ""));
         }
 
         /// <summary>
@@ -68,9 +68,9 @@ namespace CityHall.Test
         {
             var resource = "auth/user/a_new_user/";
             var settings = TestSetup.SetupCall(TestSetup.Responses.Ok, Method.DELETE, resource);
-            settings.DeleteUser("a_new_user");
-            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.DeleteUser("a_new_user"));
-            TestSetup.LoggedOutHonored(settings, () => settings.DeleteUser("a_new_user"));
+            settings.Users.DeleteUser("a_new_user");
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Users.DeleteUser("a_new_user"));
+            TestSetup.LoggedOutHonored(settings, () => settings.Users.DeleteUser("a_new_user"));
 
         }
     }

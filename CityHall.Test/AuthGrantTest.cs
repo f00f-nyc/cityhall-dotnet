@@ -17,9 +17,9 @@ namespace CityHall.Test
             var resource = "auth/user/test_user/";
             var expectedJson = "{\"env\":\"dev\",\"user\":\"a_new_user\",\"rights\":2}";
             var settings = TestSetup.SetupCall(TestSetup.Responses.UserInfo, Method.POST, resource, expectedJson);
-            settings.Grant("a_new_user", "dev", Rights.ReadProtected);
-            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Grant("a_new_user", "dev", Rights.ReadProtected));
-            TestSetup.LoggedOutHonored(settings, () => settings.Grant("a_new_user", "dev", Rights.ReadProtected));
+            settings.Users.Grant("a_new_user", "dev", Rights.ReadProtected);
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Users.Grant("a_new_user", "dev", Rights.ReadProtected));
+            TestSetup.LoggedOutHonored(settings, () => settings.Users.Grant("a_new_user", "dev", Rights.ReadProtected));
         }
     }
 }

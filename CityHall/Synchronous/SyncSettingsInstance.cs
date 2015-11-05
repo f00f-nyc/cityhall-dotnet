@@ -36,16 +36,14 @@ namespace CityHall.Synchronous
             this.syncObject = new object();
 
             BaseResponse login = this.Post<BaseResponse>(new { username = user, passhash = Password.Hash(password) }, "auth/");
+            string defaultEnvironment = null;
             if (login.IsValid)
             {
                 try
                 {
-                    this.DefaultEnvironment = this.Get<ValueResponse>("auth/user/{0}/default/", user).value;
+                    defaultEnvironment = this.Get<ValueResponse>("auth/user/{0}/default/", user).value;
                 }
-                catch
-                {
-                    this.DefaultEnvironment = null;
-                }
+                catch { }
                 finally
                 {
                     lock (this.syncObject)
@@ -53,15 +51,20 @@ namespace CityHall.Synchronous
                         this.User = user;
                         this.LoggedIn = true;
                         this.Values = new SyncValues(this);
+                        this.Environments = new SyncEnvironments(this, defaultEnvironment);
+                        this.Users = new SyncUsers(this);
+                        this.AsynchronousSettings = null;
                     }
                 }
             }
         }
 
         public bool LoggedIn { get; private set; }
+        public ISettings AsynchronousSettings { get; private set; }
         public ISyncValues Values { get; private set; }
+        public ISyncEnvironments Environments { get; private set; }
+        public ISyncUsers Users { get; private set; }
         public object syncObject;
-        public string DefaultEnvironment { get; protected set; }
         public string User { get; protected set; }
 
         internal void EnsureLoggedIn()
@@ -70,19 +73,6 @@ namespace CityHall.Synchronous
             {
                 throw new NotLoggedInException();
             }
-        }
-
-        public CityHall.ISettings AsynchronousSettings()
-        {
-            this.EnsureLoggedIn();
-
-            throw new NotImplementedException();
-        }
-
-        public void SetDefaultEnvironment(string defaultEnvironment)
-        {
-            this.EnsureLoggedIn();
-            this.Post<BaseResponse>(new { env = defaultEnvironment }, "auth/user/{0}/default/", this.User);
         }
 
         public void Logout()
@@ -97,43 +87,6 @@ namespace CityHall.Synchronous
             }
         }
 
-        public EnvironmentInfo GetEnvironment(string envName)
-        {
-            this.EnsureLoggedIn();
-            EnvironmentResponse response = this.Get<EnvironmentResponse>("auth/env/{0}/", envName);
-            return new EnvironmentInfo { Rights = response.Users.Select(kv => new EnvironmentRights { User = kv.Key, Rights = (Rights)kv.Value }).ToArray() };
-        }
-
-        public void CreateEnvironment(string envName)
-        {
-            this.EnsureLoggedIn();
-            this.Post<BaseResponse>(new { }, "auth/env/{0}/", envName);
-        }
-
-        public UserInfo GetUserInfo(string userName)
-        {
-            this.EnsureLoggedIn();
-            UserInfoResponse response = this.Get<UserInfoResponse>("auth/user/{0}", userName);
-            return new UserInfo { Permissions = response.Environments.Select(kv => new UserRights { Environment = kv.Key, Rights = (Rights)kv.Value }).ToArray() };
-        }
-
-        /// <summary>
-        /// Create a user with neither permissions nor default environment.
-        /// </summary>
-        /// <param name="userName">The user to create, cannot be this.User</param>
-        /// <param name="password">The plaintext password to set, it will be hashed before being passed across the wire</param>
-        public void CreateUser(string userName, string password)
-        {
-            if (string.Equals(userName, this.User))
-            {
-                throw new InvalidRequestException("You are passing your own user name to CreateUser(). Please use UpdatePassword() to update your own password");
-            }
-
-            this.EnsureLoggedIn();
-            var hash = string.IsNullOrEmpty(password) ? "" : Password.Hash(password);
-            this.Post<BaseResponse>(new { passhash = hash }, "auth/user/{0}/", userName);
-        }
-
         public void UpdatePassword(string password)
         {
             this.EnsureLoggedIn();
@@ -141,37 +94,25 @@ namespace CityHall.Synchronous
             this.Put(new { passhash = hash }, "auth/user/{0}/", this.User);
         }
 
-        public void DeleteUser(string userName)
-        {
-            this.EnsureLoggedIn();
-            this.DeleteFormat("auth/user/{0}/", userName);
-        }
-
-        public void Grant(string userName, string environment, Rights rights)
-        {
-            this.EnsureLoggedIn();
-            this.Post<BaseResponse>(new { env = environment, user = userName, rights = (int)rights }, "auth/grant/");
-        }
-
         internal string GetEnv(string environment = null)
         {
-            if (string.IsNullOrEmpty(environment) && string.IsNullOrEmpty(this.DefaultEnvironment))
+            if (string.IsNullOrEmpty(environment) && string.IsNullOrEmpty(this.Environments.Default))
             {
                 throw new InvalidRequestException("attempted to retreive a value without specifying an enviornment and user '{0}' has no default environment", this.User);
             }
-            return string.IsNullOrEmpty(environment) ? this.DefaultEnvironment : environment;
+            return string.IsNullOrEmpty(environment) ? this.Environments.Default : environment;
         }
 
         public string GetValue(string path, string environment = null, string over = null)
         {
-            return this.Values.GetValue(path, environment, over);
+            return this.Values.Get(path, environment, over);
         }
 
         /// <summary>
-        /// 
+        /// Given a string, make sure it both begins and ends with a '/'
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
+        /// <param name="path">The path to santize.  If it is correct, it will be returned</param>
+        /// <returns>The sanitized path</returns>
         internal static string SanitizePath(string path)
         {
             StringBuilder sb = new StringBuilder();

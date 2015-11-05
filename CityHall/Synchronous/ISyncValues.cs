@@ -20,7 +20,7 @@ namespace CityHall.Synchronous
         /// <param name="over">The override to get. If this is unspecified, then the override that matches
         /// the logged in user is retrieved.  Otherwise, the default value is returned.</param>
         /// <returns></returns>
-        string GetValue(string path, string environment = null, string over = null);
+        string Get(string path, string environment = null, string over = null);
 
         /// <summary>
         /// This is provided in case you need a lower-level access to getting the values.

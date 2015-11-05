@@ -14,7 +14,7 @@ namespace CityHall.Synchronous
 
         private SyncSettingsInstance client;
 
-        public string GetValue(string path, string environment = null, string over = null)
+        public string Get(string path, string environment = null, string over = null)
         {
             return this.GetRaw<ValueResponse>(this.client.GetEnv(environment), path, args: SyncSettingsInstance.GetOverride(over)).value;
         }

@@ -1,4 +1,5 @@
 ﻿using CityHall.Config;
+using CityHall.Synchronous;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -19,8 +20,8 @@ namespace CityHall
          */
         public static async Task<ISettings> Get(string url=null, string user=null, string password=null)
         {
-            Synchronous.ISyncSettings self = await Task.Factory.StartNew<Synchronous.ISyncSettings>(() => Synchronous.SyncSettings.Get(url, user, password));
-            return self.AsynchronousSettings();
+            Synchronous.ISyncSettings self = await Task.Factory.StartNew<ISyncSettings>(() => SyncSettings.Get(url, user, password));
+            return self.AsynchronousSettings;
         }
     }
 }

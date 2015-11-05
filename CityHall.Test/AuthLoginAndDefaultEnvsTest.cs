@@ -162,7 +162,7 @@ namespace CityHall.Test
         {
             TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
             var settings = SyncSettings.Get();
-            Assert.AreEqual(TestSetup.Responses.DefaultEnvironment.value, settings.DefaultEnvironment);
+            Assert.AreEqual(TestSetup.Responses.DefaultEnvironment.value, settings.Environments.Default);
         }
 
         /// <summary>
@@ -203,8 +203,9 @@ namespace CityHall.Test
             var expectedJson = "{\"env\":\"qa\"}";
 
             var settings = TestSetup.SetupCall(TestSetup.Responses.Ok, Method.POST, resource, expectedJson);
-            settings.SetDefaultEnvironment("qa");
-            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.SetDefaultEnvironment("qa"));
+            settings.Environments.SetDefault("qa");
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Environments.SetDefault("qa"));
+            Assert.AreEqual( "qa", settings.Environments.Default);
         }
 
         /// <summary>
@@ -215,7 +216,15 @@ namespace CityHall.Test
         {
             TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value(null));
             var settings = SyncSettings.Get();
-            Assert.IsNullOrEmpty(settings.DefaultEnvironment);
+            Assert.IsNullOrEmpty(settings.Environments.Default);
+        }
+
+        [Test]
+        public void UserIsSet()
+        {
+            TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value(null));
+            var settings = SyncSettings.Get();
+            Assert.AreEqual(TestSetup.Config.User, settings.User);
         }
     }
 }

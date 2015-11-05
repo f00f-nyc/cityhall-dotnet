@@ -72,12 +72,16 @@
     <Compile Include="Responses\UserInfoResponse.cs" />
     <Compile Include="Responses\ValueResponse.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Synchronous\ISyncEnvironments.cs" />
     <Compile Include="Synchronous\ISyncSettings.cs" />
+    <Compile Include="Synchronous\ISyncUsers.cs" />
     <Compile Include="Synchronous\ISyncValues.cs" />
     <Compile Include="Synchronous\Password.cs" />
     <Compile Include="Synchronous\SyncClient.cs" />
+    <Compile Include="Synchronous\SyncEnvironments.cs" />
     <Compile Include="Synchronous\SyncSettings.cs" />
     <Compile Include="Synchronous\SyncSettingsInstance.cs" />
+    <Compile Include="Synchronous\SyncUsers.cs" />
     <Compile Include="Synchronous\SyncValues.cs" />
   </ItemGroup>
   <ItemGroup>
