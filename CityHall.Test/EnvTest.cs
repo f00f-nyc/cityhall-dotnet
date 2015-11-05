@@ -105,9 +105,9 @@ namespace CityHall.Test
             var args = new Dictionary<string, string> { { "viewhistory", "true" } };
             var settings = TestSetup.SetupCall<HistoryResponse>(TestSetup.Responses.HistoryResponse, Method.GET, location);
 
-            var history = settings.Values.GetHistory("value1");
-            TestSetup.ErrorResponseHandled<HistoryResponse>(() => settings.Values.GetHistory("value1"));
-            TestSetup.LoggedOutHonored(settings, () => settings.Values.GetHistory("value1"));
+            var history = settings.Values.GetHistory("value1", "");
+            TestSetup.ErrorResponseHandled<HistoryResponse>(() => settings.Values.GetHistory("value1", ""));
+            TestSetup.LoggedOutHonored(settings, () => settings.Values.GetHistory("value1", ""));
             Assert.AreEqual(TestSetup.Responses.HistoryResponse.History.Count(), history.Entries.Count());
         }
 
@@ -126,7 +126,7 @@ namespace CityHall.Test
         {
             string location = "env/qa/value1/";
             var settings = TestSetup.SetupCall<HistoryResponse>(TestSetup.Responses.HistoryResponse, Method.GET, location);
-            settings.Values.GetHistory("value1", environment: "qa");
+            settings.Values.GetHistory("value1", "", environment: "qa");
         }
 
         [Test]
@@ -136,9 +136,9 @@ namespace CityHall.Test
             string expectedJson = "{\"value\":\"some value\"}";
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, expectedJson);
 
-            settings.Values.SetRaw("qa", "value1", new Value("some value"));
-            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Values.SetRaw("qa", "value1", new Value("some value")));
-            TestSetup.LoggedOutHonored(settings, () => settings.Values.SetRaw("qa", "value1", new Value("some value")));
+            settings.Values.SetRaw("qa", "value1", new Value("some value"), "");
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Values.SetRaw("qa", "value1", new Value("some value"), ""));
+            TestSetup.LoggedOutHonored(settings, () => settings.Values.SetRaw("qa", "value1", new Value("some value"), ""));
         }
 
         [Test]
@@ -148,7 +148,7 @@ namespace CityHall.Test
             string expectedJson = "{\"protect\":true}";
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, expectedJson);
 
-            settings.Values.SetRaw("qa", "value1", new Value(true));
+            settings.Values.SetRaw("qa", "value1", new Value(true), "");
         }
 
         [Test]
@@ -158,7 +158,7 @@ namespace CityHall.Test
             string expectedJson = "{\"value\":\"some value\",\"protect\":true}";
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, expectedJson);
 
-            settings.Values.SetRaw("qa", "value1", new Value("some value", true));
+            settings.Values.SetRaw("qa", "value1", new Value("some value", true), "");
         }
 
         [Test]
@@ -179,9 +179,9 @@ namespace CityHall.Test
             string expectedJson = "{\"value\":\"some value\"}";
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, expectedJson);
 
-            settings.Values.Set("qa", "value1", "some value");
-            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Values.Set("qa", "value1", "some value"));
-            TestSetup.LoggedOutHonored(settings, () => settings.Values.Set("qa", "value1", "some value"));
+            settings.Values.Set("qa", "value1", "some value", "");
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Values.Set("qa", "value1", "some value", ""));
+            TestSetup.LoggedOutHonored(settings, () => settings.Values.Set("qa", "value1", "some value", ""));
         }
 
         [Test]
@@ -201,7 +201,7 @@ namespace CityHall.Test
             string expectedJson = "{\"protect\":false}";
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, expectedJson);
 
-            settings.Values.SetProtect("qa", "value1", false);
+            settings.Values.SetProtect("qa", "value1", false, "");
         }
 
         [Test]
@@ -219,9 +219,9 @@ namespace CityHall.Test
         {
             string location = "env/qa/value1/";
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.DELETE, location);
-            settings.Values.Delete("qa", "value1");
-            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Values.Delete("qa", "value1"));
-            TestSetup.LoggedOutHonored(settings, () => settings.Values.Delete("qa", "value1"));
+            settings.Values.Delete("qa", "value1", "");
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Values.Delete("qa", "value1", ""));
+            TestSetup.LoggedOutHonored(settings, () => settings.Values.Delete("qa", "value1", ""));
         }
 
         [Test]

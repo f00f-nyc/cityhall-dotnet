@@ -27,7 +27,7 @@ namespace CityHall.Synchronous
             return this.client.GetWithParameters<T>(path, args);
         }
 
-        public History GetHistory(string path, string environment = null, string over = null)   
+        public History GetHistory(string path, string over, string environment = null)   
         {
             Dictionary<string, string> paramDict = SyncSettingsInstance.GetOverride(over);
             paramDict["viewhistory"] = "true";
@@ -75,24 +75,24 @@ namespace CityHall.Synchronous
             };
         }
 
-        public void SetRaw(string environment, string path, Data.Value value, string over = null)
+        public void SetRaw(string environment, string path, Data.Value value, string over)
         {
             this.client.EnsureLoggedIn();
             string location = string.Format("env/{0}{1}", this.client.GetEnv(environment), SyncSettingsInstance.SanitizePath(path));
             this.client.PostWithParameters<BaseResponse>(value.ToPayload(), location, SyncSettingsInstance.GetOverride(over));
         }
 
-        public void Set(string environment, string path, string value, string over = null)
+        public void Set(string environment, string path, string value, string over)
         {
             this.SetRaw(environment, path, new Value(value), over);
         }
 
-        public void SetProtect(string environment, string path, bool protect, string over = null)
+        public void SetProtect(string environment, string path, bool protect, string over)
         {
             this.SetRaw(environment, path, new Value(protect), over);
         }
 
-        public void Delete(string environment, string path, string over = null)
+        public void Delete(string environment, string path, string over)
         {
             this.client.EnsureLoggedIn();
             string location = string.Format("env/{0}{1}", this.client.GetEnv(environment), SyncSettingsInstance.SanitizePath(path));
