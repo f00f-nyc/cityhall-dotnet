@@ -69,7 +69,7 @@ namespace CityHall.Test
         public void PasswordHashingWorks()
         {
             string password = "123";
-            string hash = SyncSettings.Hash(password);
+            string hash = Password.Hash(password);
 
             Assert.AreNotEqual(password, hash);
             Assert.IsNotNullOrEmpty(hash);
@@ -144,7 +144,7 @@ namespace CityHall.Test
         {
             Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.DefaultEnvironment);
             Mock<IRestResponse<BaseResponse>> mockAuth = new Mock<IRestResponse<BaseResponse>>();
-            string expectedJson = string.Format("{{\"username\":\"test\",\"passhash\":\"{0}\"}}", SyncSettings.Hash("test"));
+            string expectedJson = string.Format("{{\"username\":\"test\",\"passhash\":\"{0}\"}}", Password.Hash("test"));
 
             mockAuth.Setup(r => r.Data).Returns(TestSetup.Responses.Ok);
             client.Setup(c => c.Execute<BaseResponse>(It.IsAny<IRestRequest>()))

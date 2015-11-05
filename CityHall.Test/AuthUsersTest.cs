@@ -38,7 +38,7 @@ namespace CityHall.Test
             TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.CreateUser("a_new_user", ""));
             TestSetup.LoggedOutHonored(settings, () => settings.CreateUser("a_new_user", ""));
 
-            expectedJson = string.Format("{{\"passhash\":\"{0}\"}}", Synchronous.SyncSettings.Hash("password"));
+            expectedJson = string.Format("{{\"passhash\":\"{0}\"}}", Synchronous.Password.Hash("password"));
             settings = TestSetup.SetupCall(TestSetup.Responses.Ok, Method.POST, resource, expectedJson);
             settings.CreateUser("a_new_user", "password");
 
@@ -53,13 +53,13 @@ namespace CityHall.Test
         {
             var resource = string.Format("auth/user/{0}/", TestSetup.Config.User);
             var expectedJson = "{\"passhash\":\"\"}";
-            var settings = TestSetup.SetupCall(TestSetup.Responses.Ok, Method.POST, resource, expectedJson);
+            var settings = TestSetup.SetupCall(TestSetup.Responses.Ok, Method.PUT, resource, expectedJson);
             settings.UpdatePassword("");
             TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.UpdatePassword(""));
             TestSetup.LoggedOutHonored(settings, () => settings.UpdatePassword(""));
 
-            expectedJson = string.Format("{{\"passhash\":\"{0}\"}}", Synchronous.SyncSettings.Hash("password"));
-            settings = TestSetup.SetupCall(TestSetup.Responses.Ok, Method.POST, resource, expectedJson);
+            expectedJson = string.Format("{{\"passhash\":\"{0}\"}}", Synchronous.Password.Hash("password"));
+            settings = TestSetup.SetupCall(TestSetup.Responses.Ok, Method.PUT, resource, expectedJson);
             settings.UpdatePassword("password");
         }
 

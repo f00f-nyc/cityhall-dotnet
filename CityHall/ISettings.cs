@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using SyncSettings = CityHall.Synchronous.ISettings;
+using SyncSettings = CityHall.Synchronous.ISyncSettings;
 
 namespace CityHall
 {

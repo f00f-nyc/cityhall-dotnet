@@ -176,7 +176,7 @@ namespace CityHall.Test
             return mockClient;
         }
 
-        public static Synchronous.ISettings SetupCall<T>(
+        public static Synchronous.ISyncSettings SetupCall<T>(
             T value, 
             Method method, 
             string resource = null, 
@@ -228,7 +228,7 @@ namespace CityHall.Test
             Assert.Throws<ErrorFromCityHallException>(() => call());
         }
 
-        public static void LoggedOutHonored(CityHall.Synchronous.ISettings settings, Action call)
+        public static void LoggedOutHonored(CityHall.Synchronous.ISyncSettings settings, Action call)
         {
             var mockClient = CityHall.Config.Ninject.Kernel.Get<Mock<IRestClient>>();
             var logoutOkay = new Mock<IRestResponse<BaseResponse>>();

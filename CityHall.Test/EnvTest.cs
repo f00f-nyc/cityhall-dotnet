@@ -14,10 +14,10 @@ namespace CityHall.Test
         public void GetRawWorksNoParameters()
         {
             var settings = TestSetup.SetupCall<ValueResponse>(TestSetup.Responses.Val1, Method.GET, "env/dev/value1/");
-            var value = settings.GetRaw<ValueResponse>("dev", "value1", null);
+            var value = settings.Values.GetRaw<ValueResponse>("dev", "value1", null);
 
-            TestSetup.ErrorResponseHandled<ValueResponse>(() => settings.GetRaw<ValueResponse>("dev", "value1", null));
-            TestSetup.LoggedOutHonored(settings, () => settings.GetRaw<ValueResponse>("dev", "value1", null));
+            TestSetup.ErrorResponseHandled<ValueResponse>(() => settings.Values.GetRaw<ValueResponse>("dev", "value1", null));
+            TestSetup.LoggedOutHonored(settings, () => settings.Values.GetRaw<ValueResponse>("dev", "value1", null));
 
             Assert.AreEqual(value.Response, TestSetup.Responses.Val1.Response);
             Assert.AreEqual(value.value, TestSetup.Responses.Val1.value);
@@ -28,7 +28,7 @@ namespace CityHall.Test
         public void GetRawWorksWithParams()
         {
             var settings = TestSetup.SetupCall<ValueResponse>(TestSetup.Responses.Val1, Method.GET, args: new Dictionary<string, string> { { "override", "cityhall" } });
-            settings.GetRaw<ValueResponse>("dev", "value1", new Dictionary<string, string> { { "override", "cityhall" } });
+            settings.Values.GetRaw<ValueResponse>("dev", "value1", new Dictionary<string, string> { { "override", "cityhall" } });
         }
 
         [Test]
@@ -82,9 +82,9 @@ namespace CityHall.Test
             var args = new Dictionary<string, string> { { "viewchildren", "true" } };
             var settings = TestSetup.SetupCall<ChildrenResponse>(TestSetup.Responses.ChildrenResponse, Method.GET, location, args: args);
 
-            var children = settings.GetChildren("value1");
-            TestSetup.ErrorResponseHandled<ChildrenResponse>(() => settings.GetChildren("value1"));
-            TestSetup.LoggedOutHonored(settings, () => settings.GetChildren("value1"));
+            var children = settings.Values.GetChildren("value1");
+            TestSetup.ErrorResponseHandled<ChildrenResponse>(() => settings.Values.GetChildren("value1"));
+            TestSetup.LoggedOutHonored(settings, () => settings.Values.GetChildren("value1"));
             Assert.AreEqual(TestSetup.Responses.ChildrenResponse.children.Count(), children.SubChildren.Count());
             Assert.AreEqual(TestSetup.Responses.ChildrenResponse.path, children.Path);
         }
@@ -95,7 +95,7 @@ namespace CityHall.Test
             string location = "env/qa/value1/";
             var settings = TestSetup.SetupCall<ChildrenResponse>(TestSetup.Responses.ChildrenResponse, Method.GET, location);
 
-            var children = settings.GetChildren("value1", environment: "qa");
+            var children = settings.Values.GetChildren("value1", environment: "qa");
         }
 
         [Test]
@@ -105,9 +105,9 @@ namespace CityHall.Test
             var args = new Dictionary<string, string> { { "viewhistory", "true" } };
             var settings = TestSetup.SetupCall<HistoryResponse>(TestSetup.Responses.HistoryResponse, Method.GET, location);
 
-            var history = settings.GetHistory("value1");
-            TestSetup.ErrorResponseHandled<HistoryResponse>(() => settings.GetHistory("value1"));
-            TestSetup.LoggedOutHonored(settings, () => settings.GetHistory("value1"));
+            var history = settings.Values.GetHistory("value1");
+            TestSetup.ErrorResponseHandled<HistoryResponse>(() => settings.Values.GetHistory("value1"));
+            TestSetup.LoggedOutHonored(settings, () => settings.Values.GetHistory("value1"));
             Assert.AreEqual(TestSetup.Responses.HistoryResponse.History.Count(), history.Entries.Count());
         }
 
@@ -118,7 +118,7 @@ namespace CityHall.Test
             var args = new Dictionary<string, string> { { "viewhistory", "true" }, {"override", "cityhall"} };
             var settings = TestSetup.SetupCall<HistoryResponse>(TestSetup.Responses.HistoryResponse, Method.GET, location, args: args);
 
-            var history = settings.GetHistory("value1", over: "cityhall");
+            var history = settings.Values.GetHistory("value1", over: "cityhall");
         }
 
         [Test]
@@ -126,7 +126,7 @@ namespace CityHall.Test
         {
             string location = "env/qa/value1/";
             var settings = TestSetup.SetupCall<HistoryResponse>(TestSetup.Responses.HistoryResponse, Method.GET, location);
-            settings.GetHistory("value1", environment: "qa");
+            settings.Values.GetHistory("value1", environment: "qa");
         }
 
         [Test]
@@ -136,9 +136,9 @@ namespace CityHall.Test
             string expectedJson = "{\"value\":\"some value\"}";
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, expectedJson);
 
-            settings.SetRaw("qa", "value1", new Value("some value"));
-            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.SetRaw("qa", "value1", new Value("some value")));
-            TestSetup.LoggedOutHonored(settings, () => settings.SetRaw("qa", "value1", new Value("some value")));
+            settings.Values.SetRaw("qa", "value1", new Value("some value"));
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Values.SetRaw("qa", "value1", new Value("some value")));
+            TestSetup.LoggedOutHonored(settings, () => settings.Values.SetRaw("qa", "value1", new Value("some value")));
         }
 
         [Test]
@@ -148,7 +148,7 @@ namespace CityHall.Test
             string expectedJson = "{\"protect\":true}";
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, expectedJson);
 
-            settings.SetRaw("qa", "value1", new Value(true));
+            settings.Values.SetRaw("qa", "value1", new Value(true));
         }
 
         [Test]
@@ -158,7 +158,7 @@ namespace CityHall.Test
             string expectedJson = "{\"value\":\"some value\",\"protect\":true}";
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, expectedJson);
 
-            settings.SetRaw("qa", "value1", new Value("some value", true));
+            settings.Values.SetRaw("qa", "value1", new Value("some value", true));
         }
 
         [Test]
@@ -168,7 +168,7 @@ namespace CityHall.Test
             Dictionary<string, string> args = new Dictionary<string,string> { { "override", "cityhall" } };
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, args: args);
 
-            settings.SetRaw("qa", "value1", new Value("some value"), over: "cityhall");
+            settings.Values.SetRaw("qa", "value1", new Value("some value"), over: "cityhall");
         }
 
 
@@ -179,9 +179,9 @@ namespace CityHall.Test
             string expectedJson = "{\"value\":\"some value\"}";
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, expectedJson);
 
-            settings.Set("qa", "value1", "some value");
-            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Set("qa", "value1", "some value"));
-            TestSetup.LoggedOutHonored(settings, () => settings.Set("qa", "value1", "some value"));
+            settings.Values.Set("qa", "value1", "some value");
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Values.Set("qa", "value1", "some value"));
+            TestSetup.LoggedOutHonored(settings, () => settings.Values.Set("qa", "value1", "some value"));
         }
 
         [Test]
@@ -191,7 +191,7 @@ namespace CityHall.Test
             Dictionary<string, string> args = new Dictionary<string, string> { { "override", "cityhall" } };
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, args: args);
 
-            settings.Set("qa", "value1", "some_value", over: "cityhall");
+            settings.Values.Set("qa", "value1", "some_value", over: "cityhall");
         }
 
         [Test]
@@ -201,7 +201,7 @@ namespace CityHall.Test
             string expectedJson = "{\"protect\":false}";
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, expectedJson);
 
-            settings.SetProtect("qa", "value1", false);
+            settings.Values.SetProtect("qa", "value1", false);
         }
 
         [Test]
@@ -211,7 +211,7 @@ namespace CityHall.Test
             Dictionary<string, string> args = new Dictionary<string, string> { { "override", "cityhall" } };
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.POST, location, args: args);
 
-            settings.SetProtect("qa", "value1", false, over: "cityhall");
+            settings.Values.SetProtect("qa", "value1", false, over: "cityhall");
         }
 
         [Test]
@@ -219,9 +219,9 @@ namespace CityHall.Test
         {
             string location = "env/qa/value1/";
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.DELETE, location);
-            settings.Delete("qa", "value1");
-            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Delete("qa", "value1"));
-            TestSetup.LoggedOutHonored(settings, () => settings.Delete("qa", "value1"));
+            settings.Values.Delete("qa", "value1");
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Values.Delete("qa", "value1"));
+            TestSetup.LoggedOutHonored(settings, () => settings.Values.Delete("qa", "value1"));
         }
 
         [Test]
@@ -230,7 +230,7 @@ namespace CityHall.Test
             string location = "env/qa/value1/";
             Dictionary<string, string> args = new Dictionary<string, string> { { "override", "cityhall" } };
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.DELETE, location, args: args);
-            settings.Delete("qa", "/value1/", over: "cityhall");
+            settings.Values.Delete("qa", "/value1/", over: "cityhall");
         }
     }
 }

@@ -19,7 +19,7 @@ namespace CityHall
          */
         public static async Task<ISettings> Get(string url=null, string user=null, string password=null)
         {
-            Synchronous.ISettings self = await Task.Factory.StartNew<Synchronous.ISettings>(() => Synchronous.SyncSettings.Get(url, user, password));
+            Synchronous.ISyncSettings self = await Task.Factory.StartNew<Synchronous.ISyncSettings>(() => Synchronous.SyncSettings.Get(url, user, password));
             return self.AsynchronousSettings();
         }
     }
