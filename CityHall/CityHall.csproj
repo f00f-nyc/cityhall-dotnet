@@ -51,6 +51,7 @@
     <Compile Include="Data\EnvironmentInfo.cs" />
     <Compile Include="Data\UserInfo.cs" />
     <Compile Include="Data\Value.cs" />
+    <Compile Include="Environments.cs" />
     <Compile Include="Exceptions\MissingConfigSection.cs" />
     <Compile Include="Config\Ninject.cs" />
     <Compile Include="Data\EnvironmentRights.cs" />
@@ -61,8 +62,9 @@
     <Compile Include="Exceptions\InvalidRequestException.cs" />
     <Compile Include="Exceptions\NotLoggedInException.cs" />
     <Compile Include="Exceptions\UrlMissingOrInvalidException.cs" />
-    <Compile Include="IAuthorization.cs" />
+    <Compile Include="IEnvironments.cs" />
     <Compile Include="ISettings.cs" />
+    <Compile Include="IUsers.cs" />
     <Compile Include="IValues.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Responses\BaseResponse.cs" />
@@ -83,6 +85,8 @@
     <Compile Include="Synchronous\SyncSettingsInstance.cs" />
     <Compile Include="Synchronous\SyncUsers.cs" />
     <Compile Include="Synchronous\SyncValues.cs" />
+    <Compile Include="Users.cs" />
+    <Compile Include="Values.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

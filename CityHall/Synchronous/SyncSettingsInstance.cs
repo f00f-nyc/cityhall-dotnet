@@ -53,7 +53,7 @@ namespace CityHall.Synchronous
                         this.Values = new SyncValues(this);
                         this.Environments = new SyncEnvironments(this, defaultEnvironment);
                         this.Users = new SyncUsers(this);
-                        this.AsynchronousSettings = null;
+                        this.AsynchronousSettings = new Settings(this);
                     }
                 }
             }
