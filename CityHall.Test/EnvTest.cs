@@ -1,5 +1,6 @@
 ﻿using CityHall.Data;
 using CityHall.Responses;
+using CityHall.Synchronous;
 using NUnit.Framework;
 using RestSharp;
 using System.Collections.Generic;
@@ -37,9 +38,9 @@ namespace CityHall.Test
             string location = string.Format("env/{0}/value1/", TestSetup.Responses.DefaultEnvironment.value);
             var settings = TestSetup.SetupCall<ValueResponse>(TestSetup.Responses.Val1, Method.GET, location);
 
-            var value = settings.GetValue("value1"); 
-            TestSetup.ErrorResponseHandled<ValueResponse>(() => settings.GetValue("value1"));
-            TestSetup.LoggedOutHonored(settings, () => settings.GetValue("value1"));
+            var value = settings.Values.Get("value1");
+            TestSetup.ErrorResponseHandled<ValueResponse>(() => settings.Values.Get("value1"));
+            TestSetup.LoggedOutHonored(settings, () => settings.Values.Get("value1"));
             Assert.AreEqual(TestSetup.Responses.Val1.value, value);
         }
 
@@ -50,7 +51,7 @@ namespace CityHall.Test
             var args = new Dictionary<string, string>() { { "override", "cityhall" } };
             var settings = TestSetup.SetupCall<ValueResponse>(TestSetup.Responses.Val1, Method.GET, location, args: args);
 
-            var value = settings.GetValue("value1", over: "cityhall");
+            var value = settings.Values.Get("value1", over: "cityhall");
             Assert.AreEqual(TestSetup.Responses.Val1.value, value);
         }
 
@@ -60,7 +61,7 @@ namespace CityHall.Test
             string location = "env/qa/value1/";
             var settings = TestSetup.SetupCall<ValueResponse>(TestSetup.Responses.Val1, Method.GET, location);
 
-            var value = settings.GetValue("value1", environment: "qa");
+            var value = settings.Values.Get("value1", environment: "qa");
             Assert.AreEqual(TestSetup.Responses.Val1.value, value);
         }
 
@@ -71,7 +72,7 @@ namespace CityHall.Test
             var args = new Dictionary<string, string> { { "override", "cityhall" } };
             var settings = TestSetup.SetupCall<ValueResponse>(TestSetup.Responses.Val1, Method.GET, location, args: args);
 
-            var value = settings.GetValue("value1", environment: "qa", over: "cityhall");
+            var value = settings.Values.Get("value1", environment: "qa", over: "cityhall");
             Assert.AreEqual(TestSetup.Responses.Val1.value, value);
         }
 
@@ -231,6 +232,23 @@ namespace CityHall.Test
             Dictionary<string, string> args = new Dictionary<string, string> { { "override", "cityhall" } };
             var settings = TestSetup.SetupCall<BaseResponse>(TestSetup.Responses.Ok, Method.DELETE, location, args: args);
             settings.Values.Delete("qa", "/value1/", over: "cityhall");
+        }
+
+        [Test]
+        public void TestGlobalsGet()
+        {
+            if ((SyncSettings.Connection != null) && SyncSettings.Connection.LoggedIn)
+            {
+                TestSetup.Response(TestSetup.Responses.Ok);
+                SyncSettings.Connection.Logout();
+            }
+
+            TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
+            string value = SyncSettings.Get("/value");
+
+            Assert.IsNotNull(SyncSettings.Connection);
+            Assert.That(SyncSettings.Connection.LoggedIn);
+            Assert.AreEqual(TestSetup.Responses.DefaultEnvironment.value, value);
         }
     }
 }

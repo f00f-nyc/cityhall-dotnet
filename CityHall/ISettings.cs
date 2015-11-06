@@ -36,6 +36,11 @@ namespace CityHall
         IUsers Users { get; }
 
         /// <summary>
+        /// If the user is logged in. In practical terms, this boolean hold whether or not Logout() has been succesfully called.
+        /// </summary>
+        bool LoggedIn { get; }
+
+        /// <summary>
         /// The current logged in user
         /// </summary>
         string User { get; }

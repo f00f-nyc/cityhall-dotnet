@@ -47,8 +47,8 @@ namespace CityHall.Test
         public void SettingsAreReturned()
         {
             TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
-            Assert.IsNotNull(SyncSettings.Get());
-            TestSetup.ErrorResponseHandled<BaseResponse>(() => SyncSettings.Get());
+            Assert.IsNotNull(SyncSettings.New());
+            TestSetup.ErrorResponseHandled<BaseResponse>(() => SyncSettings.New());
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace CityHall.Test
         public void AttemptingToGetSettingsWithoutConfigThrowsException()
         {
             AuthLoginAndDefaultEnvsTest.RemoveCityHallConfig();
-            Assert.Throws<MissingConfigSection>(() => SyncSettings.Get());
+            Assert.Throws<MissingConfigSection>(() => SyncSettings.New());
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace CityHall.Test
                 .Callback<IRestRequest>(r => Assert.AreEqual(r.Parameters[0].Value, expectedJson))
                 .Returns(mockAuth.Object);
 
-            SyncSettings.Get("http://some.url");
+            SyncSettings.New("http://some.url");
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace CityHall.Test
         {
             Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
             client.SetupSet(c => c.BaseUrl = It.IsAny<Uri>()).Callback<Uri>(u => Assert.AreEqual(TestSetup.Config.Url, u.AbsoluteUri));
-            SyncSettings.Get();
+            SyncSettings.New();
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace CityHall.Test
             Mock<IRestClient> client = TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
             string different_url = "http://test.new.url/api";
             client.SetupSet(c => c.BaseUrl = It.IsAny<Uri>()).Callback<Uri>(u => Assert.AreEqual(different_url, u.AbsoluteUri));
-            SyncSettings.Get(url: different_url);
+            SyncSettings.New(url: different_url);
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace CityHall.Test
                 .Callback<IRestRequest>(r => Assert.AreEqual(r.Parameters[0].Value, expectedJson))
                 .Returns(mockAuth.Object);
 
-            SyncSettings.Get(user: "test", password: "");
+            SyncSettings.New(user: "test", password: "");
         }
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace CityHall.Test
                 .Callback<IRestRequest>(r => Assert.AreEqual(r.Parameters[0].Value, expectedJson))
                 .Returns(mockAuth.Object);
 
-            SyncSettings.Get(user: "test", password: "test");
+            SyncSettings.New(user: "test", password: "test");
         }
 
         /// <summary>
@@ -161,7 +161,7 @@ namespace CityHall.Test
         public void DefaultEnvironmentIsRetrieved()
         {
             TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
-            var settings = SyncSettings.Get();
+            var settings = SyncSettings.New();
             Assert.AreEqual(TestSetup.Responses.DefaultEnvironment.value, settings.Environments.Default);
         }
 
@@ -173,7 +173,7 @@ namespace CityHall.Test
         {
             var client = TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
             var mockOk = new Mock<IRestResponse<BaseResponse>>();
-            var settings = SyncSettings.Get();
+            var settings = SyncSettings.New();
 
             mockOk.Setup(r => r.Data).Returns(TestSetup.Responses.Ok);
             client.Setup(c => c.Execute<BaseResponse>(It.IsAny<IRestRequest>()))
@@ -187,7 +187,7 @@ namespace CityHall.Test
             settings.Logout();
             
             TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.DefaultEnvironment);
-            settings = SyncSettings.Get();
+            settings = SyncSettings.New();
             TestSetup.ErrorResponseHandled<BaseResponse>(() => settings.Logout());
         }
 
@@ -215,7 +215,7 @@ namespace CityHall.Test
         public void NoDefaultEnvironmentFailsGracefully()
         {
             TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value(null));
-            var settings = SyncSettings.Get();
+            var settings = SyncSettings.New();
             Assert.IsNullOrEmpty(settings.Environments.Default);
         }
 
@@ -223,7 +223,7 @@ namespace CityHall.Test
         public void UserIsSet()
         {
             TestSetup.Response(TestSetup.Responses.Ok, TestSetup.Responses.Value(null));
-            var settings = SyncSettings.Get();
+            var settings = SyncSettings.New();
             Assert.AreEqual(TestSetup.Config.User, settings.User);
         }
     }

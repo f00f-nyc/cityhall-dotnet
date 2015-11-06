@@ -1,4 +1,5 @@
-﻿using Ninject;
+﻿using CityHall.Synchronous;
+using Ninject;
 using RestSharp;
 
 namespace CityHall.Config
@@ -20,6 +21,7 @@ namespace CityHall.Config
                 {
                     Ninject.Kernel = new StandardKernel();
                     Ninject.Kernel.Bind<IRestClient>().To<RestClient>();
+                    Ninject.Kernel.Bind<ISyncSettings>().To<SyncSettingsInstance>();
                     Ninject.Initialization.IsIncomplete = false;
                 }
             }

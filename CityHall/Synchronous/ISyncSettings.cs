@@ -8,16 +8,6 @@ namespace CityHall.Synchronous
     public interface ISyncSettings
     {
         /// <summary>
-        /// Retrieves the value from the server. If the value doesn't exist, or you don't have access to it, returns null.
-        /// </summary>
-        /// <param name="path">The path of the value. Starting or trailing '/' may be omitted.</param>
-        /// <param name="environment">If it is null or empty, it will use ISyncSettings.DefaultEnvironmnet</param>
-        /// <param name="over">The override to get. If this is unspecified, then the override that matches
-        /// the logged in user is retrieved.  Otherwise, the default value is returned.</param>
-        /// <returns></returns>
-        string GetValue(string path, string environment = null, string over = null);
-
-        /// <summary>
         /// The Task-based implementation of this instance
         /// </summary>
         ISettings AsynchronousSettings { get; }
@@ -41,6 +31,11 @@ namespace CityHall.Synchronous
         /// The current logged in user
         /// </summary>
         string User { get; }
+
+        /// <summary>
+        /// If the user is logged in. In practical terms, this boolean hold whether or not Logout() has been succesfully called.
+        /// </summary>
+        bool LoggedIn { get; }
 
         /// <summary>
         /// For updating the current, logged-in user's password

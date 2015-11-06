@@ -186,7 +186,7 @@ namespace CityHall.Test
             where T : BaseResponse, new()
         {
             var mockClient = TestSetup.Response(Responses.Ok, Responses.DefaultEnvironment);
-            var settings = Synchronous.SyncSettings.Get();
+            var settings = Synchronous.SyncSettings.New();
 
             var mockResponse = new Mock<IRestResponse<T>>();
             mockResponse.Setup(r => r.Data).Returns(value);

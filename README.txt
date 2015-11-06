@@ -11,30 +11,53 @@ This is the .Net/C# library for City Hall Enterprise Settings Server
 
  The intention is to use the built-in City Hall web site for actual
  settings management, and then use this library for consuming those
- settings, in an application.  As such, there are only a few commands to 
- be familiar with:
+ settings, in an application.  As such, there is really only command 
+ to be familiar with:
 
- using CityHall;
+ string value = await CityHall.Settings.Get("/some_app/value1/");
+
+ In order for this to work, you must set up the .config file:
+
+   <configSections>
+      <section name="CityHall" type="CityHall.Config.CityHallConfigSection, CityHall" />
+   </configSections>
+   <CityHall url="http://path.to.city.hall.server/api/" />
+
+ The currently machine running the code should have a user with an 
+ empty password and a default environment already set up on that server.
+
+
+
+ ADVANCED USAGE
+
+ The library covers all of the initial API in both synchronous (found
+ in the CityHall.Synchronous.SyncSettings class) and asynchronous modes.
+
+ Sample usage:
  
- var asyncSettings = Settings(url, user, password); - Must be called to 
-     initiate a session with City Hall. The password should be in 
-     plaintext, it will be hashed by the library.
+ var asyncSettings = await Settings.New(url, user, password); 
+     This must be called to initiate a session with City Hall. The 
+     password should be in plaintext, it will be hashed by the library.
  
- asyncSettings.Logout(); - To be called when the session is over.
+ await asyncSettings.Logout(); 
+     To be called when the session is over. Strictly speaking, this is
+     not necessary, sessions time out on their own.
  
- asyncSettings.Get()- This should be the most common way to retrieve a
-     value. To get the value of '/some_app/value1', use:
-        string value = await asyncSettings.Get("/some_app/value1");
+ string value = await asyncSettings.Values.Get("/some_app/value1", environment: "dev", over: "cityhall");
+     The fully qualified way to access a values. Again, for most
+     use cases, maintaining your own ISettings instance shouldn't be
+     necessary, as you'll mostly want to use the code to retrieve 
+     values.
 
 In case you need synchronous operations, the entire API is duplicated:
 
  using CityHall.Synchronous;
- var syncSettings = Settings(url, user, password);
- string value = syncSettings.Get("/some_app/value1");
+ var syncSettings = SyncSettings.New(url, user, password);
+ string value = syncSettings.Values.Get("/some_app/value1");
  
 You may also switch between them by using:
 
-  var syncSettings = asyncSettings.SynchronousSettings();
+  var syncSettings = asyncSettings.SynchronousSettings;
  
  For more in depth information about this library, please check the wiki.
 
